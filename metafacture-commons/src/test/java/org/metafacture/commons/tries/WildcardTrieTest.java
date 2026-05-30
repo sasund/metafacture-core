@@ -17,11 +17,14 @@
 
 package org.metafacture.commons.tries;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Tests for class {@link WildcardTrie}
@@ -31,21 +34,33 @@ import org.junit.Test;
  */
 public final class WildcardTrieTest {
 
+    private static final String A = "a";
+    private static final String AABB = "aabb";
+    private static final String AACBB = "aacbb";
+    private static final String AB = "ab";
+    private static final String ABBC = "abbc";
     private static final String ABC = "abc";
+    private static final String ACB = "acb";
+    private static final String B = "b";
     private static final String CCB = "ccb";
+    private static final String EMPTY = "";
+    private static final String X = "x";
+    private static final List<String> ALL = List.of(A, AABB, AACBB, AB, ABBC, ABC, ACB, B, CCB, EMPTY, X);
+
     private static final String AAQBB = "aa?bb";
+    private static final String AA_STAR_BB = "aa*bb";
+    private static final String A_STAR = "a*";
     private static final String A_STAR_B = "a*b";
     private static final String A_STAR_BC = "a*bc";
-    private static final String AA_STAR_BB = "aa*bb";
     private static final String STAR_B = "*b";
-    private static final String A_STAR = "a*";
-    private static final String AACBB = "aacbb";
-    private static final String AABB = "aabb";
-    private static final String AB = "ab";
+
     private static final String NOT_FOUND_BY = " not found by ";
     private static final String FOUND_BY = " found by ";
 
     private WildcardTrie<String> trie;
+
+    public WildcardTrieTest() {
+    }
 
     @Before
     public void createSystemUnderTest() {
@@ -53,121 +68,95 @@ public final class WildcardTrieTest {
     }
 
     @Test
+    public void testEmptyTrie() {
+        assertTrie(null);
+    }
+
+    @Test
     public void testWithQWildcard() {
-        assertTrue(trie.get("").isEmpty());
-        assertTrue(trie.get("x").isEmpty());
-
-        trie.put(ABC, ABC);
-        assertTrue(trie.get(ABC).contains(ABC));
-
-        trie.put(AAQBB, AAQBB);
-        assertTrue(trie.get(AACBB).contains(AAQBB));
-        assertTrue(trie.get(AABB).isEmpty());
-
-        trie.put(AABB, AABB);
-        assertTrue(trie.get(AABB).contains(AABB));
-        assertTrue(trie.get(AABB).size() == 1);
-
-        trie.put(AACBB, AACBB);
-        assertTrue(trie.get(AACBB).contains(AACBB));
-        assertTrue(trie.get(AACBB).contains(AAQBB));
+        assertList(ABC, ABC);
+        assertTrie(AAQBB, AACBB);
+        assertList(AABB, AABB);
+        assertList(AACBB, AAQBB, AACBB);
     }
 
     @Test
     public void testWithStarWildcard() {
-        trie.put(A_STAR_B, A_STAR_B);
-        assertTrue(AACBB + NOT_FOUND_BY + A_STAR_B, trie.get(AACBB).contains(A_STAR_B));
-        assertTrue(AABB + NOT_FOUND_BY + A_STAR_B, trie.get(AABB).contains(A_STAR_B));
-        assertTrue(AB + NOT_FOUND_BY + A_STAR_B, trie.get(AB).contains(A_STAR_B));
-        assertTrue(ABC + FOUND_BY + A_STAR_B, trie.get(ABC).isEmpty());
-        assertTrue(CCB + FOUND_BY + A_STAR_B, trie.get(CCB).isEmpty());
-
-        trie.put(AABB, AABB);
-        assertTrue(trie.get(AABB).contains(AABB));
-        assertEquals(2, trie.get(AABB).size());
-
-        trie.put(AACBB, AACBB);
-        assertTrue(trie.get(AACBB).contains(AACBB));
-        assertTrue(trie.get(AACBB).contains(A_STAR_B));
+        assertTrie(A_STAR_B, AABB, AACBB, AB, ACB);
+        assertList(AABB, A_STAR_B, AABB);
+        assertList(AACBB, A_STAR_B, AACBB);
     }
 
     @Test
     public void testWithTrailingStarWildcard() {
-        trie.put(A_STAR, A_STAR);
-        assertTrue(AACBB + NOT_FOUND_BY + A_STAR, trie.get(AACBB).contains(A_STAR));
-        assertTrue(AABB + NOT_FOUND_BY + A_STAR, trie.get(AABB).contains(A_STAR));
-        assertTrue(AB + NOT_FOUND_BY + A_STAR, trie.get(AB).contains(A_STAR));
-        assertTrue(ABC + NOT_FOUND_BY + A_STAR_B, trie.get(ABC).contains(A_STAR));
-        assertTrue(CCB + FOUND_BY + A_STAR_B, trie.get(CCB).isEmpty());
-
-        trie.put(AABB, AABB);
-        assertTrue(trie.get(AABB).contains(AABB));
-        assertEquals(2, trie.get(AABB).size());
-
-        trie.put(AACBB, AACBB);
-        assertTrue(trie.get(AACBB).contains(AACBB));
-        assertTrue(trie.get(AACBB).contains(A_STAR));
+        assertTrie(A_STAR, A, AABB, AACBB, AB, ABBC, ABC, ACB);
+        assertList(AABB, A_STAR, AABB);
+        assertList(AACBB, A_STAR, AACBB);
     }
 
     @Test
     public void testWithInitialStarWildcard() {
-        trie.put(STAR_B, STAR_B);
-        assertTrue(AACBB + NOT_FOUND_BY + STAR_B, trie.get(AACBB).contains(STAR_B));
-        assertTrue(AABB + NOT_FOUND_BY + STAR_B, trie.get(AABB).contains(STAR_B));
-
-        assertTrue(ABC + FOUND_BY + A_STAR_B, trie.get(ABC).isEmpty());
-        assertTrue(CCB + NOT_FOUND_BY + A_STAR_B, trie.get(CCB).contains(STAR_B));
-
-        trie.put(AABB, AABB);
-        assertTrue(trie.get(AABB).contains(AABB));
-        assertEquals(2, trie.get(AABB).size());
-
-        trie.put(AACBB, AACBB);
-        assertTrue(trie.get(AACBB).contains(AACBB));
-        assertTrue(trie.get(AACBB).contains(STAR_B));
+        assertTrie(STAR_B, AABB, AACBB, AB, ACB, B, CCB);
+        assertList(AABB, STAR_B, AABB);
+        assertList(AACBB, STAR_B, AACBB);
     }
 
     @Test
     public void testWithMultipleStarWildcards() {
-        trie.put(STAR_B, STAR_B);
-        trie.put(A_STAR, A_STAR);
-        trie.put(A_STAR_B, A_STAR_B);
+        assertTrie(STAR_B, AABB, AACBB, AB, ACB, B, CCB);
+        assertTrie(A_STAR, A, AABB, AACBB, AB, ABC, ABBC, ACB);
+        assertTrie(A_STAR_B, AABB, AACBB, AB, ACB);
+        assertList(AACBB, STAR_B, A_STAR, A_STAR_B, AACBB);
 
-        assertEquals(3, trie.get(AACBB).size());
+        assertTrie(AA_STAR_BB, AABB, AACBB);
+        assertList(AACBB, STAR_B, A_STAR, A_STAR_B, AA_STAR_BB, AACBB);
 
-        trie.put(AA_STAR_BB, AA_STAR_BB);
-        assertEquals(4, trie.get(AACBB).size());
-
-        assertEquals(3, trie.get(AB).size());
-        assertEquals(1, trie.get(CCB).size());
-
-        assertEquals(3, trie.get("acb").size());
+        assertList(AB, STAR_B, A_STAR, A_STAR_B, AB);
+        assertList(ACB, STAR_B, A_STAR, A_STAR_B, ACB);
+        assertList(CCB, STAR_B, CCB);
     }
 
     @Test
     public void testOverlapWithWildcard() {
-        trie.put(ABC, ABC);
-        trie.put(A_STAR_BC, A_STAR_BC);
-
-        assertEquals(2, trie.get(ABC).size());
-        assertEquals(1, trie.get("abbc").size());
+        assertTrie(A_STAR_BC, ABBC, ABC);
+        assertList(ABC, A_STAR_BC, ABC);
+        assertList(ABBC, A_STAR_BC, ABBC);
     }
 
     @Test
     public void testEmptyKey() {
-        trie.put("", ABC);
-        assertEquals(1, trie.get("").size());
+        assertList(EMPTY, EMPTY);
     }
 
     @Test
     public void testWithOrAndWildcard() {
-        final String key = ABC + WildcardTrie.OR_STRING + CCB;
-        trie.put(key, "");
-        assertTrue(ABC + NOT_FOUND_BY + key, trie.get(ABC).contains(""));
-        assertTrue(CCB + NOT_FOUND_BY + key, trie.get(CCB).contains(""));
+        assertTrie(ABC + WildcardTrie.OR_STRING + CCB, ABC, CCB);
+    }
 
-        assertTrue(AABB + FOUND_BY + key, trie.get(AABB).isEmpty());
-        assertTrue(AB + FOUND_BY + key, trie.get(AB).isEmpty());
+    private void assertTrie(final String key, final String... positive) {
+        final List<String> negative = new ArrayList<>(ALL);
+
+        if (key != null) {
+            trie.put(key, key);
+        }
+
+        Arrays.stream(positive).forEach(k -> {
+            negative.remove(k);
+            Assert.assertTrue(k + NOT_FOUND_BY + key, trie.get(k).contains(key));
+        });
+
+        negative.forEach(k -> {
+            Assert.assertFalse(k + FOUND_BY + key, trie.get(k).contains(key));
+        });
+    }
+
+    private void assertList(final String key, final String... expected) {
+        assertTrie(key, key);
+
+        final List<String> actual = trie.get(key);
+        Collections.sort(actual);
+
+        Assert.assertEquals(Arrays.asList(expected), actual);
     }
 
 }

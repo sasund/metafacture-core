@@ -28,10 +28,13 @@ trim_trailing_whitespace = true
 end_of_line = crlf
 trim_trailing_whitespace = false
 
-[*.{g,gradle,json,xml,xsd,yml}]
+[*.{fix,g,gradle,json,md,mwe2,sh,vim,xml,xsd,xtext,yml}]
 indent_size = 2
 
-[metafacture-io/src/test/resources/org/metafacture/io/compressed.txt]
+[*.tmLanguage]
+indent_style = tab
+
+[metafacture-io/src/test/resources/{__files/*.*,mappings/*.json,org/metafacture/io/compressed.txt}]
 insert_final_newline = false
 
 [metamorph/src/test/resources/org/metafacture/metamorph/maps/file-map-test*.txt]

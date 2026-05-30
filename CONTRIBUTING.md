@@ -105,9 +105,9 @@ As a general rule, we don't change public commit history, i.e. we don’t use ``
 
 #### Code Formatting and Quality
 
-Please format your code according to [this EditorConfig file](https://github.com/metafacture/metafacture-fix/blob/master/.editorconfig) and consider our current [code quality and style guidelines](https://github.com/metafacture/metafacture-core/wiki/Code-Quality-and-Style).
+Please format your code according to [this EditorConfig file](https://github.com/metafacture/metafacture-core/blob/master/.editorconfig) and consider our current [code quality and style guidelines](https://github.com/metafacture/metafacture-core/wiki/Code-Quality-and-Style).
 
-The [metafacture-fix build](https://github.com/metafacture/metafacture-fix/blob/master/build.gradle) performs automated [EditorConfig](https://github.com/metafacture/metafacture-fix/blob/master/.editorconfig) and [Checkstyle](https://github.com/metafacture/metafacture-fix/blob/master/config/checkstyle/checkstyle.xml) checks.
+The [metafacture-core build](https://github.com/metafacture/metafacture-core/blob/master/build.gradle) performs automated [EditorConfig](https://github.com/metafacture/metafacture-core/blob/master/.editorconfig) and [Checkstyle](https://github.com/metafacture/metafacture-core/blob/master/config/checkstyle/checkstyle.xml) checks.
 
 The code is automatically [quality-checked on sonarcloud.io](https://sonarcloud.io/dashboard?id=org.metafacture%3Ametafacture-core) when pushed to GitHub.
 
@@ -173,50 +173,4 @@ The *Definition of Done* describes a list of criteria which issues have to meet 
 
 ### Releasing Metafacture
 
-We use semantic versioning in release numbers `A`.`B`.`C`, i.e. increase `A` when it's a major release breaking backward compatibility; increase `B` when it got new features; increase `C` indicating bug-fixes.
-
-#### Build and publish to GitHub
-
-The following commands trigger a release build.
-
-1. Create a signed tag:
-    ```
-    git tag -s metafacture-core-A.B.C
-    ```
-1. When prompted, add a sensible commit message. For instance, something like:
-    ```
-    Publish first release of the Metafacture A line
-    ```
-1. You can now test the build locally by invoking:
-    ```
-    ./gradlew assemble
-    ```
-1. Finally, push the new tag to GitHub to trigger the actual release build:
-    ```
-    git push --follow-tags metafacture-core-A.B.C
-    ```
-
-#### Publish to Maven Central
-
-Upload archives to sonatype (where they can be released to Maven Central)
-
-1. Make sure to have a clean directory (otherwise only a SNAPSHOT will be built):
-    ```
-    git status
-    ```
-1. You need a `gradle.properties` in the root directory that looks like this:
-    ```
-    signing.gnupg.executable=gpg
-    signing.gnupg.useLegacyGpg=true
-    signing.gnupg.homeDir=$e.g."~/.gnupg"
-    signing.gnupg.keyName=$yourKeyName
-    signing.gnupg.passphrase=$keysPassphrase
-    releaseRepositoryUrl=https://oss.sonatype.org/service/local/staging/deploy/maven2/
-    releaseRepositoryUser=$yourSonatypeUsername
-    releaseRepositoryPassword=$yourSonatypePassword
-    ```
-1. Let the release be built, signed and uploaded:
-    ```
-    ./gradlew publishAllPublicationsToMavenRepository
-    ```
-1. Finally, go to oss.sonatype.org , check the `Staging Repositories` when it's finished, and release it by clicking `close`
+Follow the [MAINTAINING.md](https://github.com/metafacture/metafacture-core/blob/master/MAINTAINING.md).

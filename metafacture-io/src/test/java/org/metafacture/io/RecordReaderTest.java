@@ -16,20 +16,21 @@
 
 package org.metafacture.io;
 
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-
-import java.io.StringReader;
+import org.metafacture.framework.ObjectReceiver;
+import org.metafacture.framework.helpers.DefaultObjectReceiver;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.metafacture.framework.ObjectReceiver;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for {@link RecordReader}.
@@ -49,6 +50,9 @@ public final class RecordReaderTest {
 
     @Mock
     private ObjectReceiver<String> receiver;
+
+    public RecordReaderTest() {
+    }
 
     @Before
     public void setup() {
@@ -70,10 +74,10 @@ public final class RecordReaderTest {
                 RECORD1 + SEPARATOR +
                 RECORD2 + SEPARATOR));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(RECORD2);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -84,10 +88,10 @@ public final class RecordReaderTest {
                 SEPARATOR + RECORD1 +
                 SEPARATOR + RECORD2));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(RECORD2);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -98,10 +102,10 @@ public final class RecordReaderTest {
                 RECORD1 + SEPARATOR +
                 RECORD2));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(RECORD2);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -111,9 +115,9 @@ public final class RecordReaderTest {
         recordReader.process(new StringReader(
                 RECORD1));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -126,7 +130,7 @@ public final class RecordReaderTest {
         recordReader.process(new StringReader(
                 EMPTY_RECORD));
 
-        verifyZeroInteractions(receiver);
+        Mockito.verifyZeroInteractions(receiver);
     }
 
     @Test
@@ -138,10 +142,10 @@ public final class RecordReaderTest {
                 EMPTY_RECORD + SEPARATOR +
                 RECORD2));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(RECORD2);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -154,11 +158,11 @@ public final class RecordReaderTest {
                 EMPTY_RECORD + SEPARATOR +
                 RECORD2));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(EMPTY_RECORD);
         ordered.verify(receiver).process(RECORD2);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -171,11 +175,11 @@ public final class RecordReaderTest {
                 RECORD1 + SEPARATOR +
                 RECORD2));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(EMPTY_RECORD);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(RECORD2);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -188,11 +192,11 @@ public final class RecordReaderTest {
                 RECORD2 + SEPARATOR +
                 EMPTY_RECORD));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(RECORD2);
         ordered.verify(receiver).process(EMPTY_RECORD);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -201,10 +205,10 @@ public final class RecordReaderTest {
                 RECORD1 + DEFAULT_SEPARATOR +
                 RECORD2 + DEFAULT_SEPARATOR));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
         ordered.verify(receiver).process(RECORD2);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
     }
 
     @Test
@@ -218,12 +222,43 @@ public final class RecordReaderTest {
                 RECORD2 + SEPARATOR +
                 RECORD1));
 
-        final InOrder ordered = inOrder(receiver);
+        final InOrder ordered = Mockito.inOrder(receiver);
         ordered.verify(receiver).process(RECORD1);
-        ordered.verify(receiver, times(2)).process(RECORD2);
+        ordered.verify(receiver, Mockito.times(2)).process(RECORD2);
         ordered.verify(receiver).process(RECORD1);
-        verifyNoMoreInteractions(receiver);
+        Mockito.verifyNoMoreInteractions(receiver);
+    }
 
+    @Test
+    public void issue584_shouldResetBufferOnException() {
+        final String error = "ERROR:";
+        final String success = "SUCCESS:";
+
+        final List<String> actual = new ArrayList<>();
+        final String[] expected = new String[]{error + RECORD1, success + RECORD2};
+
+        recordReader.setReceiver(new DefaultObjectReceiver<String>() {
+            @Override
+            public void process(final String obj) {
+                if (RECORD1.equals(obj)) {
+                    throw new IllegalArgumentException(obj);
+                }
+                else {
+                    actual.add(success + obj);
+                }
+            }
+        });
+
+        try {
+            recordReader.process(new StringReader(RECORD1));
+        }
+        catch (final IllegalArgumentException e) {
+            actual.add(error + e.getMessage());
+        }
+
+        recordReader.process(new StringReader(RECORD2));
+
+        Assertions.assertArrayEquals(expected, actual.toArray());
     }
 
 }

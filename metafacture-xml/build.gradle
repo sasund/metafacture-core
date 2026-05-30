@@ -20,9 +20,8 @@ description = 'Modules for generic operations on XML documents'
 dependencies {
   api project(':metafacture-framework')
   implementation project(':metafacture-commons')
-  implementation "org.slf4j:slf4j-api:${versions.slf4j}"
   implementation "org.apache.commons:commons-compress:${versions.commons_compress}"
   testImplementation "junit:junit:${versions.junit}"
   testImplementation "org.mockito:mockito-core:${versions.mockito}"
-  testRuntimeOnly "org.slf4j:slf4j-simple:${versions.slf4j}"
+  testRuntimeOnly slf4j_provider
 }
